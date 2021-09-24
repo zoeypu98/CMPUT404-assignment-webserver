@@ -1,5 +1,9 @@
 #  coding: utf-8 
 import socketserver
+import requests
+import os
+import urllib.parse
+
 
 # Copyright 2013 Abram Hindle, Eddie Antonio Santos
 # 
@@ -30,9 +34,63 @@ import socketserver
 class MyWebServer(socketserver.BaseRequestHandler):
     
     def handle(self):
+        ## self.request is the TCP socket connected to the client
         self.data = self.request.recv(1024).strip()
+
+        # s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        # full_data = b"" 
+        # while True:
+        #     data = s.recv(1024) 
+        #     if not data:
+        #         break
+        #     full_data += data
+        self.data = self.data.decode()
+        
+
+        # s.bind((HOST, PORT))
+        # s.listen(2)
+        #self.data = self.data.decode()
+        #self.data.strip
+        #print(data)
         print ("Got a request of: %s\n" % self.data)
+        #send back the same data
+        # while True:
+        #     conn, addr = s.accept() 
+        #     print("Connected by", addr)
+        #     full_data = conn.recv(1024)
+        #     time.sleep(0.5) 
+        #     conn.sendall(full_data) 
+        #     conn.close()
+
+        
+        scode2=404
+        path = '/'
+        if os.path.isdir(path) or os.path.isfile(path):
+            if path.endswith((".html", ".css")):
+                try:
+                    requests.get('http://127.0.0.1:8080/')
+                    print("open file")
+                    f = open(path, 'r')
+                    self.request.sendall("200 OK")
+                except:
+                    f = "File not found"
+                    self.request.sendall("405 Method Not Allowed")
+                self.wfile.write(bytes(f, 'utf-8'))
+
+            else:
+                return self.request.sendall(scode2.to_bytes(5,'little'))
+        else:
+            return self.request.sendall(scode2.to_bytes(5,'little'))
+
         self.request.sendall(bytearray("OK",'utf-8'))
+
+
+        
+
+
+
+        
+
 
 if __name__ == "__main__":
     HOST, PORT = "localhost", 8080
